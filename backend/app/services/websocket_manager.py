@@ -172,3 +172,6 @@ class WebSocketManager:
                 pass
             self._ws_metadata.pop(str(id(ws)), None)
         logger.info(f"Closed all WS connections for race={race_id}")
+        
+        
+ws_manager = WebSocketManager()

@@ -1,6 +1,6 @@
 # app/routes/ws_routes.py (updated connect section snippet)
 from fastapi import APIRouter, WebSocket
-from app.auth.supabase_middleware import verify_ws_token
+from app.middleware.supabase_auth import verify_ws_token
 from app.services.websocket_manager import ws_manager
 from app.services import db
 

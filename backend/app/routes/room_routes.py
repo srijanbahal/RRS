@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import uuid
 import logging
-from app.auth.supabase_middleware import verify_token
+from app.middleware.supabase_auth import verify_token
 from app.services import db
 from app.services import team_service
 from app.services.race_service import RaceService

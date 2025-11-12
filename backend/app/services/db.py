@@ -4,10 +4,13 @@ import asyncio
 import asyncpg
 from typing import Any, Dict, List, Optional
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger("db")
 
-DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL") or os.getenv("SUPABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 # If using Supabase, use the full Postgres connection string (service_role key), e.g.
 # postgres://postgres:password@db.supabase.co:5432/postgres
 
@@ -47,3 +50,16 @@ async def executemany(query: str, args_list: List[tuple]):
         async with conn.transaction():
             for args in args_list:
                 await conn.execute(query, *args)
+
+
+
+# --- ADD THIS ALIAS AT THE END ---
+class _DBWrapper:
+    fetch = staticmethod(fetch)
+    fetchrow = staticmethod(fetchrow)
+    execute = staticmethod(execute)
+    executemany = staticmethod(executemany)
+    connect = staticmethod(connect_db)
+    close = staticmethod(close_db)
+
+db = _DBWrapper()

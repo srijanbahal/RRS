@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.services import db, race_service
-from app.auth.supabase_middleware import verify_token
+from app.middleware.supabase_auth import verify_token
 
 router = APIRouter(prefix="/races", tags=["Races"])
 

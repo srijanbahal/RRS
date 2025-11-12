@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from app.auth.supabase_middleware import verify_token
+from app.middleware.supabase_auth import verify_token
 from app.services import team_service, agent_service
 
 router = APIRouter(prefix="/agents", tags=["Agents"])

@@ -1,6 +1,6 @@
 # app/routes/auth_test_routes.py
 from fastapi import APIRouter, Depends, Request
-from app.auth.supabase_middleware import verify_token
+from app.middleware.supabase_auth import verify_token
 
 router = APIRouter(prefix="/auth-test", tags=["Auth Test"])
 

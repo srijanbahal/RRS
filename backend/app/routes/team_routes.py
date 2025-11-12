@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
 from app.services.team_service import create_team, get_team_by_owner, get_team_by_id
-from app.auth.supabase_middleware import verify_token
+from app.middleware.supabase_auth import verify_token
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
 

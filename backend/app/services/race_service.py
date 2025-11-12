@@ -4,6 +4,7 @@ import time
 import uuid
 from typing import Dict, List, Any
 import logging
+import math
 
 from app.services import db
 from app.services.websocket_manager import ws_manager
