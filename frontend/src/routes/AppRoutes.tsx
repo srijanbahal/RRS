@@ -9,8 +9,10 @@ import {
 import Login from "@/pages/auth/Login";
 import Signup from "@/pages/auth/Signup";
 import { useAuth } from "@/store/authStore";
-import LandingPage from "@/App";
+// import LandingPage from "@/App";
+import LandingPage from "@/pages/LandingPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
+import AppLayout from '@/components/AppLayout';
 
 /**
  * A component to protect routes that require authentication.
@@ -91,9 +93,11 @@ export default function AppRoutes() {
         <Route
           path="/dashboard"
           element={
-            // <RequireAuth>
-              <DashboardPage />
-            // </RequireAuth>
+            <RequireAuth>
+              <AppLayout> {/* <-- 2. Wrap dashboard... */}
+                <DashboardPage />
+              </AppLayout> {/* <-- ...in the new layout */}
+            </RequireAuth>
           }
         />
       </Routes>

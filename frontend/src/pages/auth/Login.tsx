@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/auth/AuthLayout";
 import Input from "@/components/ui/Input";
 import CTA from "@/components/ui/CTA";
@@ -7,6 +8,7 @@ import { useAuth } from "@/store/authStore";
 import { ArrowRight, Mail, Lock, Loader2 } from "lucide-react";
 
 export default function Login() {
+  const navigate = useNavigate();
   const { setLoading, setError, setSession, fetchProfile, clearMessages, setSuccess } =
     useAuth(); // <-- UPDATED
   const [email, setEmail] = useState("");
@@ -40,7 +42,8 @@ export default function Login() {
       // Set success message and redirect after a short delay
       setSuccess("Login successful! Redirecting to your dashboard...");
       setTimeout(() => {
-        window.location.href = "/dashboard"; // Use window.location to force a full refresh
+        // window.location.href = "/dashboard"; // Use window.location to force a full refresh
+        navigate("/dashboard");
       }, 1000); // 1 second delay
 
     } catch (err: any) {

@@ -16,7 +16,7 @@ const DashboardPage: React.FC = () => {
   if (!user) return null; // Route guard should prevent this
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#071018] to-[#05060a] text-white p-6 md:p-10">
+    <div className="min-h-screen bg-linear-to-b from-[#071018] to-[#05060a] text-white p-6 md:p-10">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         <aside className="col-span-1">
           <TeamCard user={user} onCreateRoom={() => setShowCreate(true)} />

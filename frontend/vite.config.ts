@@ -13,4 +13,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      // This will proxy any request starting with /api
+      // to your backend server.
+      '/api': {
+        // ❗ CHANGE THIS to your backend server's address
+        target: 'http://localhost:8000', 
+        changeOrigin: true,
+        secure: false, // Set to false if your backend is not using HTTPS
+      }
+    }
+  }
 })
