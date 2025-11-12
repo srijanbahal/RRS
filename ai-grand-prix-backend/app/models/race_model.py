@@ -1,4 +1,10 @@
-#!/usr/bin/env python3
+from pydantic import BaseModel
+from typing import List, Optional
 
-if __name__ == "__main__":
-    print("Hello, world!")
+class Race(BaseModel):
+    id: str
+    name: str
+    track: str
+    laps: int
+    agents: List[str] = []
+    status: str = "PENDING"

@@ -1,4 +1,20 @@
-#!/usr/bin/env python3
+from fastapi import FastAPI, WebSocket
+from app.api import routes_race, routes_agent, routes_telemetry
+from app.services.websocket_manager import ws_manager
 
-if __name__ == "__main__":
-    print("Hello, world!")
+app = FastAPI(title="AI Grand Prix Backend")
+
+# Include routers
+app.include_router(routes_race.router, prefix="/races", tags=["Races"])
+app.include_router(routes_agent.router, prefix="/agents", tags=["Agents"])
+app.include_router(routes_telemetry.router, prefix="/telemetry", tags=["Telemetry"])
+
+@app.websocket("/ws/race/{race_id}")
+async def race_ws(websocket: WebSocket, race_id: str):
+    """Handles real-time race telemetry"""
+    await ws_manager.connect(websocket, race_id)
+    try:
+        while True:
+            await websocket.receive_text()  # keep alive
+    except Exception:
+        ws_manager.disconnect(websocket)

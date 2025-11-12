@@ -1,4 +1,8 @@
-#!/usr/bin/env python3
+from pydantic import BaseModel
+from typing import Dict
 
-if __name__ == "__main__":
-    print("Hello, world!")
+class Telemetry(BaseModel):
+    agent: str
+    lap: int
+    speed: float
+    decision: Dict

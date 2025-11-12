@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
-
-if __name__ == "__main__":
-    print("Hello, world!")
+"""
+# TODO (Future Shared)
+This file will later handle physics & vehicle dynamics.
+For now, just acts as a placeholder for the simulation engine.
+"""

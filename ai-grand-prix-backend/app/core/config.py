@@ -1,4 +1,11 @@
-#!/usr/bin/env python3
+import os
+from dotenv import load_dotenv
 
-if __name__ == "__main__":
-    print("Hello, world!")
+load_dotenv()
+
+class Settings:
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    PORT = int(os.getenv("PORT", 8000))
+
+settings = Settings()

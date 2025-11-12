@@ -1,4 +1,9 @@
-#!/usr/bin/env python3
+from pydantic import BaseModel
+from typing import Optional, Dict
 
-if __name__ == "__main__":
-    print("Hello, world!")
+class Agent(BaseModel):
+    id: str
+    name: str
+    personality: str
+    team: Optional[str]
+    config: Optional[Dict] = {}
