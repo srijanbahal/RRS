@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket
-from app.api import routes_race, routes_agent, routes_telemetry
+from app.api import routes_race, routes_agent, routes_telemetry, ws_routes
 from app.services.websocket_manager import ws_manager
 
 app = FastAPI(title="AI Grand Prix Backend")
@@ -8,6 +8,8 @@ app = FastAPI(title="AI Grand Prix Backend")
 app.include_router(routes_race.router, prefix="/races", tags=["Races"])
 app.include_router(routes_agent.router, prefix="/agents", tags=["Agents"])
 app.include_router(routes_telemetry.router, prefix="/telemetry", tags=["Telemetry"])
+app.include_router(ws_routes.router, prefix="/ws", tags=["WebSocket"])
+
 
 @app.websocket("/ws/race/{race_id}")
 async def race_ws(websocket: WebSocket, race_id: str):
