@@ -2,10 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, PlayCircle, Sparkles, ShieldCheck, Gauge, Users, Layers, Globe2, Github, Youtube, Twitter, ChevronRight } from "lucide-react";
 
-// Landing page designed with a clean IIT-D style aesthetic: bold type, generous whitespace,
-// soft gradients, micro-interactions, and clear hierarchy.
-// TailwindCSS + Framer Motion. Drop into your React app and render <LandingPage />.
-
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-[#0b0f17] text-white overflow-x-hidden">
@@ -249,7 +245,6 @@ function FeatureCard({ icon, title, desc }: FeatureCardProps) {
   );
 }
 
-// --- FIXED COMPONENT 2 ---
 // Define the types for the props
 type FooterButtonProps = {
   icon: React.ReactNode;
