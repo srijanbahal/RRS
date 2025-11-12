@@ -233,8 +233,7 @@ class RaceService:
 
     # -----------------------------------------------------------------------
     # 3️. Start Race (public entry)
-    # -----------------------------------------------------------------------
-    
+    # -----------------------------------------------------------------------    
     async def start_race(self, race_id: str) -> dict:
         """
         Starts the race loop asynchronously.
@@ -284,7 +283,6 @@ class RaceService:
     # -----------------------------------------------------------------------
     # Race Loop (core simulation logic) - DB persistence + filtered broadcasts
     # -----------------------------------------------------------------------
-    
     async def _race_loop(self, race_id: str):
         """
         Main async race simulation loop:
