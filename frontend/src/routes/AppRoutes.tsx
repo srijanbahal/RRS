@@ -15,25 +15,23 @@ import DashboardPage from "@/pages/dashboard/DashboardPage";
 /**
  * A component to protect routes that require authentication.
  */
-function RequireAuth({ children }: { children: React.ReactNode }) { // 👈 1. FIX: Changed type to React.ReactNode
-  const { user, loading, fetchProfile } = useAuth(
-    (state) => ({
-      user: state.user,
-      loading: state.loading,
-      fetchProfile: state.fetchProfile,
-    })
-  );
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const user = useAuth((state) => state.user);
+  const loading = useAuth((state) => state.loading);
+  const fetchProfile = useAuth((state) => state.fetchProfile);
+  const hasLoaded = useAuth((state) => state.hasLoaded); // <-- 1. GET hasLoaded
   const location = useLocation();
 
   useEffect(() => {
-    // Fetch profile if we don't have a user and aren't already loading
-    if (!user && !loading) {
+    // Only fetch profile if it hasn't been loaded on app start.
+    // We also check !loading to prevent race conditions.
+    if (!hasLoaded && !loading) { // <-- 2. UPDATE CONDITION
       fetchProfile();
     }
-  }, [user, loading, fetchProfile]);
+  }, [hasLoaded, loading, fetchProfile]); // <-- 3. UPDATE DEPENDENCIES
 
-  if (loading) {
-    // Show a loading state while checking auth
+  // Show loading screen if we're actively loading OR if we haven't finished the initial load.
+  if (loading || !hasLoaded) { // <-- 4. UPDATE LOADING CHECK
     return (
       <div className="min-h-screen bg-[#0b0f17] text-white grid place-items-center">
         Loading session...
@@ -42,13 +40,12 @@ function RequireAuth({ children }: { children: React.ReactNode }) { // 👈 1. F
   }
 
   if (!user) {
-    // Redirect them to the landing page if they are not logged in.
+    // Now this only runs AFTER hasLoaded is true and loading is false.
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return children;
 }
-
 /**
  * A component to handle routes that should only be visible to logged-out users,
  * like login and signup.
@@ -94,9 +91,9 @@ export default function AppRoutes() {
         <Route
           path="/dashboard"
           element={
-            <RequireAuth>
+            // <RequireAuth>
               <DashboardPage />
-            </RequireAuth>
+            // </RequireAuth>
           }
         />
       </Routes>

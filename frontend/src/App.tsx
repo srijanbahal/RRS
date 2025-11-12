@@ -245,3 +245,18 @@ function FeatureCard({ icon, title, desc }: FeatureCardProps) {
   );
 }
 
+// --- FIXED COMPONENT 2 ---
+// Define the types for FooterButton props
+type FooterButtonProps = {
+  icon: React.ReactNode;
+  label: string;
+};
+
+function FooterButton({ icon, label }: FooterButtonProps) {
+  return (
+    <button className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-white/80 hover:bg-white/5 hover:text-white transition">
+      {icon}
+    </button>
+  );
+}
+
