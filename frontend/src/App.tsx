@@ -1,15 +1,33 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, PlayCircle, Sparkles, ShieldCheck, Gauge, Users, Layers, Globe2, Github, Youtube, Twitter, ChevronRight } from "lucide-react";
+import {
+  ArrowRight,
+  PlayCircle,
+  Sparkles,
+  ShieldCheck,
+  Gauge,
+  Users,
+  Layers,
+  Globe2,
+  Github,
+  Youtube,
+  Twitter,
+  ChevronRight,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom"; // <-- IMPORT useNavigate
+// We don't need useAuth here anymore unless you want to change the
+// "Launch app" button text based on auth state.
+// We will let the router handle the redirect logic.
 
 export default function LandingPage() {
+  const navigate = useNavigate(); // <-- ADDED
+
   return (
     <div className="relative min-h-screen bg-[#0b0f17] text-white overflow-x-hidden">
       {/* --- Ambient Background --- */}
+      {/* ... (no changes) ... */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        {/* radial glow */}
         <div className="absolute inset-0 bg-[radial-gradient(60%_40%_at_50%_0%,rgba(64,199,255,0.25),rgba(11,15,23,0))]" />
-        {/* animated gradient blobs */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.8, scale: [1, 1.1, 1] }}
@@ -31,19 +49,32 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-sky-400 to-fuchsia-500 shadow-lg shadow-fuchsia-500/20" />
-            <span className="text-lg font-semibold tracking-wide">TrackShift Arena</span>
+            <span className="text-lg font-semibold tracking-wide">
+              TrackShift Arena
+            </span>
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-white/80">
-            <a href="#features" className="hover:text-white transition">Features</a>
-            <a href="#how" className="hover:text-white transition">How it works</a>
-            <a href="#live" className="hover:text-white transition">Live races</a>
-            <a href="#faq" className="hover:text-white transition">FAQ</a>
+            <a href="#features" className="hover:text-white transition">
+              Features
+            </a>
+            <a href="#how" className="hover:text-white transition">
+              How it works
+            </a>
+            <a href="#live" className="hover:text-white transition">
+              Live races
+            </a>
+            <a href="#faq" className="hover:text-white transition">
+              FAQ
+            </a>
           </nav>
           <div className="flex items-center gap-3">
             <button className="hidden md:inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 px-4 text-sm text-white/90 hover:bg-white/5">
               <Github className="h-4 w-4" /> GitHub
             </button>
-            <button className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-violet-500 px-4 text-sm font-medium shadow-lg shadow-sky-500/20 hover:brightness-110">
+            <button
+              onClick={() => navigate("/dashboard")} // <-- UPDATED
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-violet-500 px-4 text-sm font-medium shadow-lg shadow-sky-500/20 hover:brightness-110"
+            >
               Launch app <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -54,6 +85,7 @@ export default function LandingPage() {
       <section className="relative">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28 grid md:grid-cols-2 gap-12 items-center">
           <div>
+            {/* ... (h1 and p tags no change) ... */}
             <motion.h1
               initial={{ y: 12, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -70,25 +102,28 @@ export default function LandingPage() {
             >
               Watch LLM and RL agents battle it out on iconic circuits. Spectate live or build your team, tune personalities, and deploy policies — all in a cinematic, low-latency 3D arena.
             </motion.p>
-
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <button className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white text-[#0b0f17] px-5 font-medium hover:-translate-y-0.5 transition will-change-transform">
+              <button
+                onClick={() => navigate("/dashboard")} // <-- UPDATED
+                className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white text-[#0b0f17] px-5 font-medium hover:-translate-y-0.5 transition will-change-transform"
+              >
                 <PlayCircle className="h-5 w-5" /> Join a live race
               </button>
-              <button className="inline-flex h-11 items-center gap-2 rounded-2xl border border-white/15 px-5 text-white/90 hover:bg-white/5">
+              <button
+                onClick={() => navigate("/signup")} // <-- UPDATED
+                className="inline-flex h-11 items-center gap-2 rounded-2xl border border-white/15 px-5 text-white/90 hover:bg-white/5"
+              >
                 Create your team <ChevronRight className="h-4 w-4" />
               </button>
             </div>
-
-            {/* Trust badges */}
+            {/* ... (rest of hero no change) ... */}
             <div className="mt-10 grid grid-cols-3 md:grid-cols-6 gap-6 opacity-80">
               {["OpenAI", "Gemini", "Groq", "FAISS", "Three.js", "PyTorch"].map((brand) => (
                 <div key={brand} className="text-xs md:text-sm text-white/60">{brand}</div>
               ))}
             </div>
           </div>
-
-          {/* Showcase Card */}
+          {/* ... (rest of hero no change) ... */}
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -96,7 +131,6 @@ export default function LandingPage() {
             className="relative rounded-3xl border border-white/10 p-2 bg-white/5 backdrop-blur-xl shadow-2xl"
           >
             <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
-              {/* Placeholder for 3D canvas hero */}
               <div className="aspect-[16/10] w-full bg-[radial-gradient(60%_50%_at_50%_30%,#1f2937,transparent)] relative">
                 <div className="absolute inset-0 grid grid-cols-3 gap-1 p-4 opacity-30">
                   {Array.from({ length: 9 }).map((_, i) => (
@@ -122,7 +156,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- Feature Grid --- */}
+      {/* ... (rest of landing page no change) ... */}
       <section id="features" className="mx-auto max-w-7xl px-6 py-14 md:py-20">
         <div className="mb-10">
           <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">Built for spectators and teams</h2>
@@ -138,7 +172,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- How it works --- */}
       <section id="how" className="mx-auto max-w-7xl px-6 py-14 md:py-20 border-t border-white/5">
         <div className="grid md:grid-cols-3 gap-8 items-start">
           <div className="md:col-span-1">
@@ -171,7 +204,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- Live CTA --- */}
       <section id="live" className="mx-auto max-w-7xl px-6 py-16">
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-sky-900/40 to-fuchsia-900/30 p-8 md:p-12">
           <div className="max-w-2xl">
@@ -181,19 +213,20 @@ export default function LandingPage() {
               <button className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white text-[#0b0f17] px-5 font-medium">
                 Watch now <Youtube className="h-5 w-5" />
               </button>
-              <button className="inline-flex h-11 items-center gap-2 rounded-2xl border border-white/15 px-5 text-white/90 hover:bg-white/5">
+              <button 
+                onClick={() => navigate("/dashboard")} // <-- UPDATED
+                className="inline-flex h-11 items-center gap-2 rounded-2xl border border-white/15 px-5 text-white/90 hover:bg-white/5"
+              >
                 Explore rooms <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
-          {/* decorative stripe */}
           <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20">
             <div className="absolute -right-20 top-10 h-64 w-64 rotate-12 bg-[conic-gradient(from_90deg,transparent,white)] blur-3xl" />
           </div>
         </div>
       </section>
 
-      {/* --- Footer --- */}
       <footer className="mt-10 border-t border-white/5">
         <div className="mx-auto max-w-7xl px-6 py-10 grid md:grid-cols-2 gap-8 items-center">
           <div>
