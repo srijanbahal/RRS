@@ -1,146 +1,174 @@
-# app/services/websocket_manager.py
-"""
-WebSocketManager
-- Manages websocket connections grouped by race_id (rooms).
-- Provides robust broadcast/send utilities that tolerate disconnects.
-- Keeps a simple heartbeat mechanism (optional) and connection metadata.
-"""
-
-from fastapi import WebSocket
-from typing import Dict, List, Any, Optional
 import asyncio
 import json
 import logging
+from typing import Dict, List, Any, Optional
+from fastapi import WebSocket
 
 logger = logging.getLogger("WebSocketManager")
 
 
 class WebSocketManager:
+    """
+    Handles WebSocket connections per race room.
+    Supports:
+      - Connection tracking per race_id
+      - Metadata per socket (user_id, role, team_id, allowed_entry_ids)
+      - Safe async broadcast and targeted send
+    """
+
     def __init__(self):
-        # race_id -> list[WebSocket]
+        # { race_id: [WebSocket, ...] }
         self.active_connections: Dict[str, List[WebSocket]] = {}
-        # optional metadata per websocket (weak map not implemented; small product)
+        # { str(id(ws)): { user_id, role, team_id, allowed_entry_ids } }
         self._ws_metadata: Dict[str, Dict[str, Any]] = {}
-        # lock to protect mutations if used in high concurrency
+        # Thread-safety
         self._lock = asyncio.Lock()
 
+    # ----------------------------------------------------------------------
+    # CONNECTION MANAGEMENT
+    # ----------------------------------------------------------------------
     async def connect(self, websocket: WebSocket, race_id: str, metadata: Optional[Dict] = None):
         """
-        Accept and register a new websocket connection for a specific race room.
-        metadata: optional dict (e.g., {"role": "spectator", "user_id": "..."}).
+        Accept a new WebSocket connection, add to pool, and register metadata.
         """
         await websocket.accept()
         async with self._lock:
             self.active_connections.setdefault(race_id, []).append(websocket)
-            if metadata is not None:
-                # store minimal metadata keyed by websocket id() - note: not persisted across restarts
+            if metadata:
                 self._ws_metadata[str(id(websocket))] = metadata
-        logger.debug(f"WS connected for race={race_id}. total={len(self.active_connections[race_id])}")
+
+        meta_log = f"{metadata}" if metadata else "no meta"
+        logger.info(f"WebSocket connected to race={race_id}, meta={meta_log}")
 
     def disconnect(self, websocket: WebSocket):
         """
-        Remove websocket from any race room it belongs to and clean metadata.
+        Remove a WebSocket from all rooms and delete metadata.
         """
         removed = False
-        sid = str(id(websocket))
-        for race, sockets in list(self.active_connections.items()):
+        for race_id, sockets in list(self.active_connections.items()):
             if websocket in sockets:
-                try:
-                    sockets.remove(websocket)
-                except ValueError:
-                    pass
+                sockets.remove(websocket)
                 removed = True
-                if len(sockets) == 0:
-                    # remove empty list
-                    self.active_connections.pop(race, None)
-                logger.debug(f"WS disconnected for race={race}. remaining={len(sockets)}")
-        # cleanup metadata
-        if sid in self._ws_metadata:
-            self._ws_metadata.pop(sid, None)
-        return removed
-
-    async def _safe_send(self, websocket: WebSocket, data: Any):
-        """
-        Send JSON-compatible data safely to a single websocket.
-        Uses send_json if available; otherwise falls back to send_text(json).
-        Exceptions are caught and logged — caller should handle removal.
-        """
-        try:
-            # FastAPI WebSocket provides send_json
-            await websocket.send_json(data)
-        except Exception as e:
-            logger.debug(f"send_json failed, trying send_text. error={e}")
-            try:
-                await websocket.send_text(json.dumps(data))
-            except Exception as ex:
-                # Final failure — propagate so caller may remove ws
-                logger.warning(f"Failed to send to websocket (will be disconnected). error={ex}")
-                raise
-
-    async def broadcast(self, race_id: str, message: Dict[str, Any]):
-        """
-        Broadcast a message (dict) to all active websockets in a race room.
-        This method will attempt to send to all sockets and remove dead sockets.
-        """
-        if race_id not in self.active_connections:
-            logger.debug(f"broadcast: no active connections for race {race_id}")
-            return
-
-        sockets = list(self.active_connections.get(race_id, []))  # shallow copy
-        if not sockets:
-            return
-
-        # Prepare send tasks so slow clients don't block others
-        send_tasks = []
-        for ws in sockets:
-            async def _send_and_handle(w):
-                try:
-                    await self._safe_send(w, message)
-                except Exception:
-                    # On any failure, remove the websocket from active list
-                    logger.debug("Removing dead websocket during broadcast.")
-                    self.disconnect(w)
-
-            send_tasks.append(asyncio.create_task(_send_and_handle(ws)))
-
-        # Wait for all sends to complete (fire-and-forget would lose errors)
-        if send_tasks:
-            await asyncio.gather(*send_tasks, return_exceptions=True)
-
-    async def send_to(self, race_id: str, websocket: WebSocket, message: Dict[str, Any]):
-        """
-        Send to a specific websocket (if still registered for the race).
-        """
-        sockets = self.active_connections.get(race_id, [])
-        if websocket not in sockets:
-            logger.debug("send_to: websocket not in race connections")
-            return
-        try:
-            await self._safe_send(websocket, message)
-        except Exception:
-            self.disconnect(websocket)
+                if not sockets:
+                    del self.active_connections[race_id]
+        self._ws_metadata.pop(str(id(websocket)), None)
+        if removed:
+            logger.info(f"WebSocket {id(websocket)} disconnected")
+        else:
+            logger.debug(f"disconnect() called for unknown WebSocket {id(websocket)}")
 
     def list_connections(self, race_id: str) -> List[WebSocket]:
         """
-        Return a list of active websockets for a race (copy).
+        Returns the list of active sockets for a given race_id.
         """
-        return list(self.active_connections.get(race_id, []))
+        return self.active_connections.get(race_id, [])
 
-    def connection_count(self, race_id: str) -> int:
-        return len(self.active_connections.get(race_id, []))
-
-    async def broadcast_batch(self, messages_by_race: Dict[str, List[Dict[str, Any]]]):
+    # ----------------------------------------------------------------------
+    # BROADCAST / SEND METHODS
+    # ----------------------------------------------------------------------
+    async def broadcast(self, race_id: str, message: Any):
         """
-        Broadcast multiple messages grouped by race_id (efficient batch).
-        messages_by_race: { race_id: [msg1, msg2, ...], ... }
+        Broadcast a JSON-serializable message to all sockets in the given race room.
         """
-        tasks = []
-        for race_id, msgs in messages_by_race.items():
-            for m in msgs:
-                tasks.append(asyncio.create_task(self.broadcast(race_id, m)))
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
+        if race_id not in self.active_connections:
+            return
+        data = json.dumps(message)
+        sockets = list(self.active_connections[race_id])
 
+        to_remove = []
+        for ws in sockets:
+            try:
+                await ws.send_text(data)
+            except Exception as e:
+                logger.warning(f"WS broadcast send failed for {id(ws)}: {e}")
+                to_remove.append(ws)
 
-# singleton to import across project
-ws_manager = WebSocketManager()
+        # Clean up failed sockets
+        for ws in to_remove:
+            self.disconnect(ws)
+
+    async def send_to(self, race_id: str, websocket: WebSocket, message: Any):
+        """
+        Send a message to a specific WebSocket in the race room.
+        """
+        try:
+            data = json.dumps(message)
+            await websocket.send_text(data)
+        except Exception as e:
+            logger.warning(f"WS send_to failed for {id(websocket)}: {e}")
+            self.disconnect(websocket)
+
+        async def send_to_metadata_match(self, race_id: str, message: Any, predicate):
+            """
+            Send a JSON-serializable message to all WebSockets in the race
+            whose metadata satisfies the predicate(meta) -> bool.
+
+            Example usage:
+                await ws_manager.send_to_metadata_match(
+                    race_id,
+                    {"event": "private_update"},
+                    lambda meta: meta and meta.get("team_id") == "TEAM123"
+                )
+            """
+            sockets = self.active_connections.get(race_id, [])
+            if not sockets:
+                return
+
+            data = json.dumps(message)
+            to_remove = []
+
+            for ws in sockets:
+                meta = self._ws_metadata.get(str(id(ws)))
+                try:
+                    if predicate(meta):
+                        await ws.send_text(data)
+                except Exception as e:
+                    logger.warning(f"send_to_metadata_match failed for {id(ws)}: {e}")
+                    to_remove.append(ws)
+
+            for ws in to_remove:
+                self.disconnect(ws)
+
+    # ----------------------------------------------------------------------
+    # METADATA UTILITIES
+    # ----------------------------------------------------------------------
+    def get_metadata(self, websocket: WebSocket) -> Optional[Dict[str, Any]]:
+        return self._ws_metadata.get(str(id(websocket)))
+
+    def get_clients_by_team(self, race_id: str, team_id: str) -> List[WebSocket]:
+        """
+        Return all sockets in a race whose metadata.team_id matches.
+        """
+        clients = []
+        for ws in self.list_connections(race_id):
+            meta = self._ws_metadata.get(str(id(ws)))
+            if meta and meta.get("team_id") == team_id:
+                clients.append(ws)
+        return clients
+
+    def get_clients_by_role(self, race_id: str, role: str) -> List[WebSocket]:
+        """
+        Return all sockets in a race whose role matches (e.g., 'spectator').
+        """
+        clients = []
+        for ws in self.list_connections(race_id):
+            meta = self._ws_metadata.get(str(id(ws)))
+            if meta and meta.get("role") == role:
+                clients.append(ws)
+        return clients
+
+    # ----------------------------------------------------------------------
+    # CLEANUP
+    # ----------------------------------------------------------------------
+    async def close_all_for_race(self, race_id: str):
+        """
+        Forcefully close all sockets for a given race (e.g., when race ends).
+        """
+        sockets = self.active_connections.pop(race_id, [])
+        for ws in sockets:
+            try:
+                await ws.close(code=1000)
+            except Exception:
+                pass
+            self._ws_metadata.pop(str(id(ws)), None)
+        logger.info(f"Closed all WS connections for race={race_id}")
