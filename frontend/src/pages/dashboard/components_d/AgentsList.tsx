@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/store/authStore';
-import { MOCK_AGENTS } from '@/lib/mockData'; // <-- 1. Import
+// import { MOCK_AGENTS } from '@/lib/mockData'; // <-- 1. Import
 import type { Agent } from '@/lib/mockData'; // <-- 1. Import
 import { AlertCircle } from 'lucide-react'; // <-- 2. Import icon
 
@@ -17,7 +17,7 @@ const AgentsList: React.FC = () => {
       // If no token, just load mock data immediately
       setLoading(false);
       setError('Not logged in. Displaying mock data.');
-      setAgents(MOCK_AGENTS);
+      // setAgents(MOCK_AGENTS);
       return;
     }
 
@@ -38,7 +38,7 @@ const AgentsList: React.FC = () => {
         if (!isCancelled) {
           // 7. Load MOCK data on failure
           setError('Server offline. Displaying mock data.');
-          setAgents(MOCK_AGENTS);
+          // setAgents(MOCK_AGENTS);
         }
       } finally { 
         if (!isCancelled) setLoading(false); 

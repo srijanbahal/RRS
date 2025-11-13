@@ -1,7 +1,7 @@
 // File: src/pages/dashboard/components_d/LiveRaces.tsx
 import React, { useEffect, useState } from 'react';
 import RaceCard from './RaceCard';
-import { MOCK_RACES } from '@/lib/mockData'; // <-- 1. Import
+// import { MOCK_RACES } from '@/lib/mockData'; // <-- 1. Import
 import type { RaceSummary } from '@/lib/mockData'; // <-- 1. Import
 import { AlertCircle } from 'lucide-react'; // <-- 2. Import icon
 
@@ -26,7 +26,7 @@ const LiveRaces: React.FC = () => {
         if (mounted) {
           // 6. Load MOCK data on failure
           setError('Server offline. Displaying mock data.');
-          setRaces(MOCK_RACES);
+          // setRaces(MOCK_RACES);
         }
       }
       finally { 

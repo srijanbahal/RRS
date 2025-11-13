@@ -1,6 +1,6 @@
 // File: src/pages/dashboard/components_d/RoomsList.tsx
 import React, { useEffect, useState } from 'react';
-import { MOCK_ROOMS } from '@/lib/mockData'; // <-- 1. Import
+// import { MOCK_ROOMS } from '@/lib/mockData'; // <-- 1. Import
 import type { Room } from '@/lib/mockData'; // <-- 1. Import
 import { AlertCircle } from 'lucide-react'; // <-- 2. Import icon
 
@@ -24,7 +24,7 @@ const RoomsList: React.FC = () => {
         if (!isCancelled) {
           // 7. Load MOCK data on failure
           setError('Server offline. Displaying mock data.');
-          setRooms(MOCK_ROOMS);
+          // setRooms(MOCK_ROOMS);
         }
       }
       finally { 
