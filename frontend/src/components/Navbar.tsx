@@ -1,5 +1,6 @@
-// src/components/Navbar.tsx
+// File: src/components/Navbar.tsx
 import { ArrowRight, Github } from "lucide-react";
+import React from "react"; // Import React if not already imported
 
 export default function Navbar() {
   return (
@@ -19,9 +20,17 @@ export default function Navbar() {
           <button className="hidden md:inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 px-4 text-sm text-white/90 hover:bg-white/5">
             <Github className="h-4 w-4" /> GitHub
           </button>
-          <button className="inline-flex h-10 items-center gap-2 rounded-xl bg-linear-to-r from-sky-500 to-violet-500 px-4 text-sm font-medium shadow-lg shadow-sky-500/20 hover:brightness-110">
+          
+          {/* --- THIS IS THE CHANGE --- */}
+          {/* I've converted this from a <button> to an <a> tag */}
+          <a
+            href="/login"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-linear-to-r from-sky-500 to-violet-500 px-4 text-sm font-medium shadow-lg shadow-sky-500/20 hover:brightness-110"
+          >
             Launch app <ArrowRight className="h-4 w-4" />
-          </button>
+          </a>
+          {/* --- END OF CHANGE --- */}
+
         </div>
       </div>
     </header>

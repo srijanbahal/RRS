@@ -1,16 +1,18 @@
+// File: src/pages/auth/Login.tsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// 1. We NO LONGER need useNavigate here.
 import AuthLayout from "@/components/auth/AuthLayout";
 import Input from "@/components/ui/Input";
 import CTA from "@/components/ui/CTA";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/store/authStore";
+// 2. We NO LONGER need api or fetchProfile here.
 import { ArrowRight, Mail, Lock, Loader2 } from "lucide-react";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { setLoading, setError, setSession, fetchProfile, clearMessages, setSuccess } =
-    useAuth(); // <-- UPDATED
+  // 3. We only need these actions.
+  const { setLoading, setError, clearMessages, setSuccess } =
+    useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -18,39 +20,44 @@ export default function Login() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    clearMessages(); // <-- ADDED: Clear old messages
+    clearMessages();
     try {
+      // 4. Step 1: Sign in to Supabase. That's IT.
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (error) throw error;
+      if (error) throw error; // Throws if login is invalid
 
-      const { session } = data;
-      if (session) {
-        const user = session.user;
-        const u = {
-          id: user.id,
-          email: user.email || "",
-          name: user.user_metadata?.name || null,
-          teamId: user.user_metadata?.teamId || null,
-        };
-        setSession(u, session.access_token);
-      }
-      await fetchProfile();
-
-      // Set success message and redirect after a short delay
-      setSuccess("Login successful! Redirecting to your dashboard...");
-      setTimeout(() => {
-        // window.location.href = "/dashboard"; // Use window.location to force a full refresh
-        navigate("/dashboard");
-      }, 1000); // 1 second delay
+      // 5. If successful, onAuthStateChange in main.tsx will
+      //    automatically fire and call fetchProfile.
+      //    The PublicOnly guard will see the user and redirect to /app.
+      //    We just set a loading message here.
+      setSuccess("Login successful! Redirecting...");
+      
+      // We don't navigate. We let the guards do the work.
 
     } catch (err: any) {
-      setError(err?.message || "Login failed");
+      // 6. The error handling is now much cleaner
+      console.error("--- LOGIN FAILED ---");
+      console.error("Full Error Object:", err);
+      console.error("Error Message:", err?.message);
+      console.error("----------------------");
+      
+      let userMessage = "Login failed. Please try again.";
+      if (err?.message) {
+        if (err.message.includes("Email not confirmed")) {
+          userMessage = "Login failed. Please check your email inbox and click the confirmation link first.";
+        } else if (err.message.includes("Invalid login credentials")) {
+          userMessage = "Invalid email or password. Please try again.";
+        }
+      }
+      
+      setError(userMessage);
+      setSubmitting(false); // Only set submitting to false on error
+      
     } finally {
-      setSubmitting(false);
-      setLoading(false); // You might not need this if not used
+      setLoading(false);
     }
   };
 
@@ -66,7 +73,7 @@ export default function Login() {
             setEmail(e.target.value)
           }
           icon={<Mail className="h-4 w-4" />}
-          disabled={submitting} // <-- ADDED
+          disabled={submitting}
         />
         <Input
           type="password"
@@ -76,7 +83,7 @@ export default function Login() {
             setPassword(e.target.value)
           }
           icon={<Lock className="h-4 w-4" />}
-          disabled={submitting} // <-- ADDED
+          disabled={submitting}
         />
         <CTA disabled={submitting}>
           {submitting ? (

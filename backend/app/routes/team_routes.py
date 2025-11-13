@@ -4,8 +4,12 @@ from pydantic import BaseModel
 from typing import Optional
 from app.services.team_service import create_team, get_team_by_owner, get_team_by_id
 from app.middleware.supabase_auth import verify_token
+import logging
 
-router = APIRouter(prefix="/teams", tags=["Teams"])
+
+router = APIRouter(tags=["Teams"])
+
+
 
 
 class TeamCreatePayload(BaseModel):
@@ -17,6 +21,7 @@ class TeamCreatePayload(BaseModel):
 
 @router.post("", summary="Create a team for the authenticated user")
 async def create_team_endpoint(payload: TeamCreatePayload, req: Request, _=Depends(verify_token)):
+    logging.INFO("Create  Verfiy Token", verify_token)
     owner_id = req.state.user_id
     # check if owner already has a team
     existing = await get_team_by_owner(owner_id)

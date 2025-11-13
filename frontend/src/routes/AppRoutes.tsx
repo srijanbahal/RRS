@@ -1,4 +1,6 @@
-import React, { useEffect } from "react";
+// File: src/routes/AppRoutes.tsx
+import React from "react";
+import { useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -9,48 +11,42 @@ import {
 import Login from "@/pages/auth/Login";
 import Signup from "@/pages/auth/Signup";
 import { useAuth } from "@/store/authStore";
-// import LandingPage from "@/App";
 import LandingPage from "@/pages/LandingPage";
-// import DashboardPage from "@/pages/dashboard/DashboardPage";
-import AppLayout from "@/components/AppLayout";
+import { useNavigate } from "react-router-dom";
+
+// Import Layouts and Pages
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import SpectatorLayout from "@/components/dashboard/SpectatorLayout";
+import AppHub from "@/routes/AppsHub"; // Our new role router
+import CreateTeamPage from "@/pages/auth/CreateTeamPage"; // The "gate" for participants
+
+// Participant Pages
 import ParticipantDashboard from "@/pages/ParticipantDashboard";
-import SpectatorDashboard from "@/pages/SpectatorDashboard";
-// import PlaceholderPage from "@/components/PlaceholderPage"; // For dummy sidebar pages
-
-// 1. Import your new layout and pages
-// import DashboardLayout from "@/components/dashboard/DashboardLayout";
-
-// 2. Import all the new dummy pages
 import AiLabPage from "@/pages/AiLabPage";
 import RoomsPage from "@/pages/RoomsPage";
 import LeaderboardPage from "@/pages/LeaderBoardPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import TeamsPage from "@/pages/TeamsPage";
 import SettingsPage from "@/pages/SettingsPage";
+import CreateAgentsPage from "@/pages/auth/CreateAgentspage";
 
-/**
- * A component to protect routes that require authentication.
- */
+// Spectator Pages
+import SpectatorDashboard from "@/pages/SpectatorDashboard";
+// --- (Your RequireAuth and PublicOnly components MUST be in this file) ---
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuth((state) => state.user);
   const loading = useAuth((state) => state.loading);
   const fetchProfile = useAuth((state) => state.fetchProfile);
-  const hasLoaded = useAuth((state) => state.hasLoaded); // <-- 1. GET hasLoaded
+  const hasLoaded = useAuth((state) => state.hasLoaded);
   const location = useLocation();
 
-  useEffect(() => {
-    // Only fetch profile if it hasn't been loaded on app start.
-    // We also check !loading to prevent race conditions.
+  React.useEffect(() => {
     if (!hasLoaded && !loading) {
-      // <-- 2. UPDATE CONDITION
       fetchProfile();
     }
-  }, [hasLoaded, loading, fetchProfile]); // <-- 3. UPDATE DEPENDENCIES
+  }, [hasLoaded, loading, fetchProfile]);
 
-  // Show loading screen if we're actively loading OR if we haven't finished the initial load.
   if (loading || !hasLoaded) {
-    // <-- 4. UPDATE LOADING CHECK
     return (
       <div className="min-h-screen bg-[#0b0f17] text-white grid place-items-center">
         Loading session...
@@ -59,77 +55,88 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    // Now this only runs AFTER hasLoaded is true and loading is false.
-    return <Navigate to="/" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
 }
-/**
- * A component to handle routes that should only be visible to logged-out users,
- * like login and signup.
- */
+
 function PublicOnly({ children }: { children: React.ReactNode }) {
-  // 👈 2. FIX: Changed type to React.ReactNode
   const { user } = useAuth();
-
   if (user) {
-    // Redirect them to the dashboard if they are already logged in.
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/app" replace />;
   }
-
   return children;
 }
+// --- (End of Auth components) ---
 
-/**
- * Main application router.
- */ export default function AppRoutes() {
+
+function AuthRedirectCleanup() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.hash.includes("access_token")) {
+      console.log('Cleaning auth tokens from URL hash...');
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
+
+  return null; 
+}
+
+
+export default function AppRoutes() {
   return (
     <BrowserRouter>
+      <AuthRedirectCleanup /> 
       <Routes>
         {/* === Public Routes === */}
         <Route path="/" element={<LandingPage />} />
         <Route
           path="/login"
-          element={
-            <PublicOnly>
-              <Login />
-            </PublicOnly>
-          }
+          element={<PublicOnly><Login /></PublicOnly>}
         />
         <Route
           path="/signup"
-          element={
-            <PublicOnly>
-              <Signup />
-            </PublicOnly>
-          }
+          element={<PublicOnly><Signup /></PublicOnly>}
         />
 
-        {/* === Protected Dashboard Routes === */}
+        {/* === Protected App Routes === */}
         <Route
-          path="/dashboard"
-          element={
-            <RequireAuth>
-              <AppLayout>
-                <DashboardLayout />
-              </AppLayout>
-            </RequireAuth>
-          }
+          path="/app"
+          element={<RequireAuth><AppHub /></RequireAuth>}
         >
-          {/* This is the new nested structure */}
-          <Route index element={<Navigate to="team" replace />} />
-          <Route path="team" element={<ParticipantDashboard />} />
-          <Route path="spectate" element={<SpectatorDashboard />} />
-
-          {/* 4. Use your new dummy pages */}
-          <Route path="ai-lab" element={<AiLabPage />} />
-          <Route path="rooms" element={<RoomsPage />} />
-          <Route path="leaderboard" element={<LeaderboardPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
-          <Route path="teams" element={<TeamsPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+          {/* AppHub's <Outlet> renders one of the routes below: */}
+          
+          {/* 1. PARTICIPANT (Fully Onboarded) ROUTES */}
+          <Route element={<DashboardLayout />}>
+            <Route index element={<Navigate to="team" replace />} />
+            <Route path="team" element={<ParticipantDashboard />} />
+            <Route path="ai-lab" element={<AiLabPage />} />
+            <Route path="rooms" element={<RoomsPage />} />
+            <Route path="leaderboard" element={<LeaderboardPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="teams" element={<TeamsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+          
+          {/* 2. PARTICIPANT (Onboarding) ROUTES */}
+          <Route path="create-team" element={<CreateTeamPage />} />
+          <Route path="create-agents" element={<CreateAgentsPage />} />
         </Route>
+
+        {/* === SPECTATOR ROUTES === */}
+        <Route
+          path="/app/spectator"
+          element={<RequireAuth><SpectatorLayout /></RequireAuth>}
+        >
+          <Route index element={<SpectatorDashboard />} />
+        </Route>
+        
+        {/* Fallback for old /dashboard link */}
+        <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+
       </Routes>
     </BrowserRouter>
   );

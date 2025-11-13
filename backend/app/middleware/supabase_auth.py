@@ -1,4 +1,4 @@
-# app/auth/supabase_middleware.py
+# File: app/middleware/supabase_auth.py
 from fastapi import Request, HTTPException, Depends, WebSocket
 import jwt
 import os
@@ -19,13 +19,23 @@ async def verify_token(request: Request):
 
     token = auth_header.split(" ")[1]
     try:
-        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"])
+        # --- THIS IS THE FIX ---
+        # We must explicitly tell PyJWT what 'audience' to accept.
+        # For Supabase, this is 'authenticated'.
+        payload = jwt.decode(
+            token, 
+            SUPABASE_JWT_SECRET, 
+            algorithms=["HS256"], 
+            audience="authenticated"  # <-- ADD THIS LINE
+        )
+        # --- END OF FIX ---
     except jwt.PyJWTError as e:
+        # This will now correctly show "Invalid token: Invalid audience"
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
     # Attach user info to request.state
     request.state.user_id = payload.get("sub")
-    request.state.role = payload.get("role", "spectator")
+    request.state.role = payload.get("role", "spectator") # This 'role' is from the token, not your DB
 
     return payload
 
@@ -44,7 +54,14 @@ async def verify_ws_token(websocket: WebSocket) -> dict:
         raise ValueError("Missing token")
 
     try:
-        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"])
+        # --- ADD THE FIX HERE AS WELL ---
+        payload = jwt.decode(
+            token, 
+            SUPABASE_JWT_SECRET, 
+            algorithms=["HS256"], 
+            audience="authenticated"  # <-- ADD THIS LINE
+        )
+        # --- END OF FIX ---
         user_id = payload.get("sub")
         role = payload.get("role", "spectator")
         return {"user_id": user_id, "role": role}

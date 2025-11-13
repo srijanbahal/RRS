@@ -10,7 +10,7 @@ from app.services import team_service
 from app.services.race_service import RaceService
 
 logger = logging.getLogger("room_routes")
-router = APIRouter(prefix="/rooms", tags=["Rooms"])
+router = APIRouter(tags=["Rooms"])
 
 race_service = RaceService()  # reuse single instance; ensure single import across app
 

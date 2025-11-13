@@ -2,6 +2,12 @@ import logging
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
+# --- THIS IS THE FIX ---
+# Load .env variables before anything else
+from dotenv import load_dotenv
+load_dotenv()
+# --- END OF FIX ---
+
 # Routers
 from app.routes import (
     auth_test_routes,
@@ -19,6 +25,8 @@ from app.services.db import db
 from app.middleware.supabase_auth import verify_token
 
 logger = logging.getLogger("main")
+
+
 
 # --------------------------------------------------------------------------
 # Initialize app

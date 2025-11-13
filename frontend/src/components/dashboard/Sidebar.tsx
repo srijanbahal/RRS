@@ -12,14 +12,15 @@ import {
   Settings 
 } from 'lucide-react';
 
+// 1. UPDATE ALL PATHS TO USE /app
 const sidebarButtons = [
-  { name: 'Home', icon: Home, path: '/dashboard/team' },
-  { name: 'AI Lab', icon: FlaskConical, path: '/dashboard/ai-lab' },
-  { name: 'Rooms', icon: Swords, path: '/dashboard/rooms' },
-  { name: 'Leaderboard', icon: Trophy, path: '/dashboard/leaderboard' },
-  { name: 'Analytics', icon: BarChart3, path: '/dashboard/analytics' },
-  { name: 'Teams', icon: Users, path: '/dashboard/teams' },
-  { name: 'Settings', icon: Settings, path: '/dashboard/settings' },
+  { name: 'Home', icon: Home, path: '/app/team' },
+  { name: 'AI Lab', icon: FlaskConical, path: '/app/ai-lab' },
+  { name: 'Rooms', icon: Swords, path: '/app/rooms' },
+  { name: 'Leaderboard', icon: Trophy, path: '/app/leaderboard' },
+  { name: 'Analytics', icon: BarChart3, path: '/app/analytics' },
+  { name: 'Teams', icon: Users, path: '/app/teams' },
+  { name: 'Settings', icon: Settings, path: '/app/settings' },
 ];
 
 export default function Sidebar() {
@@ -87,7 +88,7 @@ function SidebarButton({ item, isActive }: SidebarButtonProps) {
             transition={{ duration: 0.15, ease: 'easeOut' }}
             className="absolute left-full ml-4 px-3 py-1.5 
                        bg-gray-900 border border-white/10 rounded-lg shadow-lg
-                       text-sm font-medium whitespace-nowrap"
+                       text-sm font-medium whitespace-nowrap z-50"
           >
             {item.name}
           </motion.div>

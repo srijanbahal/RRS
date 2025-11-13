@@ -1,3 +1,4 @@
+// File: vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -18,10 +19,15 @@ export default defineConfig({
       // This will proxy any request starting with /api
       // to your backend server.
       '/api': {
-        // ❗ CHANGE THIS to your backend server's address
         target: 'http://localhost:8000', 
         changeOrigin: true,
-        secure: false, // Set to false if your backend is not using HTTPS
+        secure: false, 
+        
+        // --- THIS IS THE FIX ---
+        // This removes '/api' from the path before sending it to your backend
+        // e.g., /api/teams -> /teams
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        // --- END OF FIX ---
       }
     }
   }
