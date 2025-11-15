@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 // 1. We NO LONGER need useNavigate here.
 import AuthLayout from "@/components/auth/AuthLayout";
-import Input from "@/components/ui/Input";
+import  Input  from "@/components/ui/iinput";
 import CTA from "@/components/ui/CTA";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/store/authStore";

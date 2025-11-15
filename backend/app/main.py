@@ -17,6 +17,7 @@ from app.routes import (
     race_routes,
     telemetry_routes,
     ws_routes,
+    circuit_routes,
 )
 
 # Core services
@@ -54,6 +55,7 @@ app.include_router(room_routes.router, prefix="/rooms", tags=["Rooms"])
 app.include_router(race_routes.router, prefix="/races", tags=["Races"])
 app.include_router(telemetry_routes.router, prefix="/telemetry", tags=["Telemetry"])
 app.include_router(ws_routes.router, prefix="/ws", tags=["WebSocket"])
+app.include_router(circuit_routes.router, prefix="/circuits")
 
 # --------------------------------------------------------------------------
 # Health Check

@@ -155,7 +155,7 @@ export default function CreateAgentsPage() {
                 <button
                   onClick={onFinish}
                   className="inline-flex items-center justify-center gap-2 h-11 w-full rounded-2xl 
-                             bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 font-medium 
+                             bg-linear-to-r from-emerald-500 to-cyan-500 px-5 font-medium 
                              shadow-lg shadow-emerald-500/20 disabled:opacity-60"
                 >
                   Finish Onboarding <ArrowRight className="h-4 w-4" />

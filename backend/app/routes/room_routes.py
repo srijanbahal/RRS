@@ -136,3 +136,44 @@ async def join_room(room_id: str, payload: JoinPayload, req: Request, _=Depends(
         await race_service.start_race(race_id)
 
     return {"success": True, "participant": dict(row), "current_count": current_count}
+
+
+
+# --- ADD THIS NEW ENDPOINT ---
+@router.get("", summary="List all open rooms")
+async def list_rooms():
+    """
+    Fetches a list of all rooms that are 'OPEN' or 'FULL',
+    joining circuit info and participant counts.
+    """
+    query = """
+    SELECT 
+        r.id, 
+        r.name, 
+        r.status, 
+        r.max_players,
+        COALESCE(c.name, 'Unknown Circuit') as circuit_name,
+        COALESCE(pc.player_count, 0) as current_players
+    FROM 
+        rooms r
+    LEFT JOIN 
+        circuits c ON r.circuit_id = c.id
+    LEFT JOIN 
+        (
+            SELECT room_id, COUNT(*) as player_count 
+            FROM room_participants 
+            GROUP BY room_id
+        ) pc ON r.id = pc.room_id
+    WHERE
+        r.status IN ('OPEN', 'FULL')
+    ORDER BY 
+        r.created_at DESC
+    LIMIT 20;
+    """
+    try:
+        rows = await db.fetch(query)
+        return {"success": True, "rooms": [dict(r) for r in rows]}
+    except Exception as e:
+        logger.exception(f"Failed to list rooms: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch rooms")
+# --- END OF NEW ENDPOINT ---

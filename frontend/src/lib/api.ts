@@ -64,8 +64,6 @@ export const api = {
 
   // 3. AGENTS
   agents: {
-    // --- THIS IS THE FIXED SECTION ---
-    // Added personality, model, and config to match your backend payload
     create: (data: {
       name: string;
       type: string;
@@ -78,7 +76,6 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
-    // --- END OF FIX ---
       
     getMyAgents: () => apiFetch('/agents/me'),
     getById: (agentId: string) => apiFetch(`/agents/${agentId}`),
@@ -86,11 +83,19 @@ export const api = {
   
   // 4. ROOMS
   rooms: {
-    create: (data: { name: string; circuit_id: string; max_players: number; }) =>
+    // --- THIS IS THE UPDATED SECTION ---
+    create: (data: { 
+      name: string; 
+      circuit_id?: string | null; // Made optional
+      max_players: number; 
+      is_private: boolean;      // Added
+    }) =>
       apiFetch('/rooms', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    // --- END OF UPDATE ---
+
     join: (roomId: string, agentId: string) =>
       apiFetch(`/rooms/${roomId}/join`, {
         method: 'POST',
@@ -113,11 +118,15 @@ export const api = {
   telemetry: {
     getLatest: (raceId: string) => apiFetch(`/telemetry/${raceId}`),
     clearCache: (raceId: string) => apiFetch(`/telemetry/${raceId}`, { method: 'DELETE' }),
+  },
+
+  // 7. CIRCUITS (NEW)
+  circuits: {
+    list: () => apiFetch('/circuits'),
   }
 };
 
 // --- WebSocket Helper ---
-
 export const getWebSocketUrl = (raceId: string) => {
   const token = useAuth.getState().token;
   const wsProtocol = window.location.protocol === 'https' ? 'wss' : 'ws';
